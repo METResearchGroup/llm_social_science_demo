@@ -22,6 +22,7 @@ Variables:
 |----------|----------|---------|
 | `OPENAI_API_KEY` | yes | — |
 | `CORS_ORIGINS` | no | `http://localhost:5173` (comma-separated list allowed) |
+| `CHAT_APP_WARMUP_ON_START` | no | `1` — if truthy, the backend calls `conversations.create` during app startup so the first streamed turn does not pay that round-trip |
 
 The chat model is fixed in code (`gpt-5-nano`; see `OPENAI_CHAT_MODEL` in `chat_app/backend/app.py`).
 

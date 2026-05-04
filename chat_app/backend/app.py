@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     )
     openai_api_key: str = Field(alias="OPENAI_API_KEY")
     cors_origins: str = Field(default="http://localhost:5173", alias="CORS_ORIGINS")
+    warmup_on_start: bool = Field(default=True, alias="CHAT_APP_WARMUP_ON_START")
 
 
 settings = Settings()
@@ -55,17 +57,6 @@ class HealthResponse(BaseModel):
     model: str
 
 
-app = FastAPI(title="chat_app backend", version="0.1.0")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
-    allow_credentials=False,
-    allow_methods=["GET", "POST", "HEAD", "OPTIONS"],
-    allow_headers=["Content-Type", "Accept"],
-)
-
-
 async def _ensure_conversation() -> str:
     global _conversation_id
     if _conversation_id is not None:
@@ -79,6 +70,27 @@ async def _ensure_conversation() -> str:
                 raise HTTPException(status_code=502, detail=f"openai error: {e}") from e
             _conversation_id = conv.id
         return _conversation_id
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.warmup_on_start:
+        try:
+            await _ensure_conversation()
+        except HTTPException as e:
+            logger.warning("Conversation warmup failed: %s", e.detail)
+    yield
+
+
+app = FastAPI(title="chat_app backend", version="0.1.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "HEAD", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
+)
 
 
 @app.get("/api/health", response_model=HealthResponse)
@@ -105,9 +117,8 @@ async def chat(req: ChatRequest) -> ChatResponse:
 
 @app.post("/api/chat/stream")
 async def chat_stream(req: ChatRequest) -> StreamingResponse:
-    conv_id = await _ensure_conversation()
-
     async def event_generator():
+        conv_id = await _ensure_conversation()
         full_text_parts: list[str] = []
         try:
             async with aclient.responses.stream(
