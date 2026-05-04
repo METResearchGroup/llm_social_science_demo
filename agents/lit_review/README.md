@@ -13,7 +13,7 @@ The graph is defined in `agent.py`; the Typer CLI lives in `main.py`. Successful
 | **tavily_search** | Loads MCP tools (Tavily over stdio), runs one search per worker payload (`worker_query`), and appends normalized hits into shared state for downstream merging. |
 | **merge_paper_results** | Consumes all `tavily_raw_hits` from parallel branches, deduplicates by URL, and builds the human-readable `papers` list (title, URL, optional source-query suffix). |
 | **get_human_feedback** | Interactive checkpoint: lists merged sources, lets you remove entries by index, optionally records free-text guidance; updates `papers` and `human_feedback` for the summary step. |
-| **draft_summary** | Invokes the LLM with the curated list (and human notes) to produce a fixed-outline markdown report, wraps it with horizontal rules, and writes **`report.md`**. Sets `summary` to a short completion message for the CLI. |
+| **draft_summary** | Invokes the LLM with the curated list (and human notes) to produce a markdown report.|
 
 ## How the nodes relate
 
