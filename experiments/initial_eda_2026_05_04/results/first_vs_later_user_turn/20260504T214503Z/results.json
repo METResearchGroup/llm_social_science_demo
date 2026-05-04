@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "analysis": "first_vs_later_user_turn",
+  "batch_id": "20260504T214503Z",
+  "dataset_path": "data/dataset.parquet",
+  "row_count_input": 97638,
+  "row_count_after_filters": 48873,
+  "filters": {
+    "role": "user",
+    "sorted_by": [
+      "url",
+      "message_index"
+    ]
+  },
+  "figures": [
+    "visuals.png"
+  ],
+  "metrics": {
+    "first_user_turn_n": 9358,
+    "later_user_turn_n": 39515,
+    "first_mean_len": 770.6982261166916,
+    "first_median_len": 87.0,
+    "later_mean_len": 244.9246615209414,
+    "later_median_len": 65.0,
+    "first_topic_top10": {
+      "specific_info": 4283,
+      "computer_programming": 623,
+      "mathematical_calculation": 591,
+      "other": 586,
+      "tutoring_or_teaching": 560,
+      "write_fiction": 398,
+      "argument_or_summary_generation": 318,
+      "create_an_image": 247,
+      "edit_or_critique_provided_text": 212,
+      "unclear": 200
+    },
+    "later_topic_top10": {
+      "specific_info": 11403,
+      "other": 5132,
+      "unclear": 4008,
+      "mathematical_calculation": 2696,
+      "tutoring_or_teaching": 2673,
+      "computer_programming": 2048,
+      "greetings_and_chitchat": 1875,
+      "relationships_and_personal_reflection": 1796,
+      "write_fiction": 1409,
+      "argument_or_summary_generation": 1153
+    }
+  },
+  "warnings": []
+}
