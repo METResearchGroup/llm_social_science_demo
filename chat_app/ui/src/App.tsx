@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import { postChat, postReset } from "./api";
+import { postReset, streamChat } from "./api";
 import type { UiMessage } from "./types";
 
 function newId(): string {
@@ -13,6 +13,7 @@ export default function App() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const controllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,21 +31,42 @@ export default function App() {
       { id: assistantId, role: "assistant", text: "", pending: true },
     ]);
     setSending(true);
+    const controller = new AbortController();
+    controllerRef.current = controller;
     try {
-      const res = await postChat(text);
-      setMessages((m) =>
-        m.map((msg) =>
-          msg.id === assistantId
-            ? { ...msg, text: res.assistant_message, pending: false }
-            : msg,
-        ),
-      );
+      await streamChat(text, {
+        signal: controller.signal,
+        onDelta: (chunk) => {
+          setMessages((m) =>
+            m.map((msg) =>
+              msg.id === assistantId ? { ...msg, text: msg.text + chunk, pending: true } : msg,
+            ),
+          );
+        },
+        onDone: ({ assistant_message }) => {
+          setMessages((m) =>
+            m.map((msg) =>
+              msg.id === assistantId ? { ...msg, text: assistant_message, pending: false } : msg,
+            ),
+          );
+        },
+        onError: (detail) => {
+          setError(detail);
+          setMessages((m) => m.filter((x) => x.id !== assistantId));
+        },
+        onAbort: () => {
+          setMessages((m) =>
+            m.map((msg) => (msg.id === assistantId ? { ...msg, pending: false } : msg)),
+          );
+        },
+      });
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
       setMessages((m) => m.filter((x) => x.id !== assistantId));
     } finally {
       setSending(false);
+      controllerRef.current = null;
     }
   }, [input, sending]);
 
@@ -84,7 +106,11 @@ export default function App() {
             key={msg.id}
             className={`bubble bubble-${msg.role}${msg.pending ? " bubble-pending" : ""}`}
           >
-            {msg.pending ? <span className="pending-dots">Thinking…</span> : msg.text}
+            {msg.pending && msg.text === "" ? (
+              <span className="pending-dots">Thinking…</span>
+            ) : (
+              msg.text
+            )}
           </div>
         ))}
         <div ref={bottomRef} className="scroll-anchor" />
@@ -99,9 +125,16 @@ export default function App() {
           disabled={sending}
           aria-label="Message"
         />
-        <button type="button" className="send" onClick={() => void onSubmit()} disabled={sending || !input.trim()}>
-          Send
-        </button>
+        <div className="composer-actions">
+          <button type="button" className="send" onClick={() => void onSubmit()} disabled={sending || !input.trim()}>
+            Send
+          </button>
+          {sending ? (
+            <button type="button" className="stop" onClick={() => controllerRef.current?.abort()}>
+              Stop
+            </button>
+          ) : null}
+        </div>
       </footer>
     </div>
   );

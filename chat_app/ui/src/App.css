@@ -110,6 +110,13 @@
   align-items: flex-end;
 }
 
+.composer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
 .composer textarea {
   flex: 1;
   resize: vertical;
@@ -138,6 +145,21 @@
 }
 
 .send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stop {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #6e1f2a;
+  border: 1px solid #a23446;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stop:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

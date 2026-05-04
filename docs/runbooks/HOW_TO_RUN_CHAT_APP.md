@@ -36,6 +36,7 @@ Optional variables (defaults shown in `.env.example`):
 | Variable | Purpose |
 |----------|---------|
 | `CORS_ORIGINS` | Comma-separated browser origins allowed by the backend (default `http://localhost:5173`) |
+| `CHAT_APP_WARMUP_ON_START` | If `1` (default), create the OpenAI conversation during app startup so the first chat stream avoids `conversations.create` latency |
 
 The Responses API model id is hardcoded in `chat_app/backend/app.py` as **`gpt-5-nano`** (`OPENAI_CHAT_MODEL`); it is not configurable via environment variables.
 
@@ -57,7 +58,7 @@ Quick check (optional):
 curl -s http://localhost:8000/api/health | jq
 ```
 
-Expect `"ok": true` and `"conversation_id": null` until the first chat request creates a conversation.
+Expect `"ok": true`. With default warmup (`CHAT_APP_WARMUP_ON_START=1`), `"conversation_id"` is often set immediately after startup. If warmup is disabled or failed, it stays `null` until the first chat request creates a conversation.
 
 ## Start the UI
 
@@ -75,6 +76,10 @@ The Vite dev server listens on **5173** and proxies **`/api`** to **http://local
 
 - Type a message and click **Send** (Enter sends; Shift+Enter adds a newline).
 - Use **Reset** to discard the OpenAI conversation server-side and clear the on-screen transcript.
+
+### Streaming
+
+The UI uses **streaming** by default (`POST /api/chat/stream`). Replies grow in the assistant bubble as chunks arrive. While a reply is in flight, **Stop** aborts the request; partial text stays in the bubble and you can send again or continue the thread.
 
 ## If port 8000 is already in use
 
