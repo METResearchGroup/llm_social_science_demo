@@ -3,3 +3,5 @@
 *.env
 *tasks.md*
 *ai_tools*
+*.vite*
+*.cursor*
