@@ -17,7 +17,6 @@ from data.dataloader import DataLoader
 def _print_local_sample() -> None:
     loader = DataLoader()
     df = loader.load_data_from_local()
-    breakpoint()
     print(df.shape)
     print(df.head())
 
