@@ -80,6 +80,34 @@ cd chat_app/ui && npx tsc --noEmit
 cd chat_app/ui && npm run build
 ```
 
-## Streaming (follow-up)
+## Streaming
 
-**Streaming is a planned follow-up; v1 returns full responses only.** A later change can add something like `POST /api/chat/stream` with `text/event-stream`, `client.responses.stream(...)` on the server, and streamed updates in the UI—without breaking the v1 JSON contract.
+The UI sends turns to **`POST /api/chat/stream`** (Server-Sent Events). The legacy **`POST /api/chat`** JSON endpoint is unchanged.
+
+Response headers: `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `X-Accel-Buffering: no`.
+
+Wire format: frames separated by `\n\n`. Each frame is a single line `data: <json>` where `<json>` is one of:
+
+- `{"type":"delta","text":"<chunk>"}` — append `text` to the assistant bubble.
+- `{"type":"done","conversation_id":"<id>","assistant_message":"<full text>"}` — terminal success; replace bubble with `assistant_message`.
+- `{"type":"error","detail":"<message>"}` — terminal error.
+
+Validation or upstream errors before the stream opens return normal FastAPI **`400`/`502`** with a JSON body (no SSE).
+
+Example (use **`-N`** so curl does not buffer the stream):
+
+```bash
+curl -N -s -X POST http://localhost:8000/api/chat/stream \
+  -H 'Content-Type: application/json' \
+  -d '{"user_message":"count to 5 slowly"}'
+```
+
+Example frames (abbreviated):
+
+```text
+data: {"type": "delta", "text": "1"}
+
+data: {"type": "delta", "text": "\n2"}
+
+data: {"type": "done", "conversation_id": "conv_...", "assistant_message": "1\n2\n..."}
+```

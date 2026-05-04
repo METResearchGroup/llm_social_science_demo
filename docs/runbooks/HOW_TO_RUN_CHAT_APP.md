@@ -76,6 +76,10 @@ The Vite dev server listens on **5173** and proxies **`/api`** to **http://local
 - Type a message and click **Send** (Enter sends; Shift+Enter adds a newline).
 - Use **Reset** to discard the OpenAI conversation server-side and clear the on-screen transcript.
 
+### Streaming
+
+The UI uses **streaming** by default (`POST /api/chat/stream`). Replies grow in the assistant bubble as chunks arrive. While a reply is in flight, **Stop** aborts the request; partial text stays in the bubble and you can send again or continue the thread.
+
 ## If port 8000 is already in use
 
 Another process may be bound to `8000`. Either stop that process or run this backend on a different port, for example:

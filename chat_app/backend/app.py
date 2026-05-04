@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI, OpenAIError
+from fastapi.responses import StreamingResponse
+from openai import AsyncOpenAI, OpenAI, OpenAIError
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -28,6 +30,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 client = OpenAI(api_key=settings.openai_api_key)
+aclient = AsyncOpenAI(api_key=settings.openai_api_key)
 
 _conversation_id: Optional[str] = None
 _lock = asyncio.Lock()
@@ -98,6 +101,49 @@ async def chat(req: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=502, detail=f"openai error: {e}") from e
     text = getattr(response, "output_text", None) or ""
     return ChatResponse(assistant_message=text, conversation_id=conv_id)
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(req: ChatRequest) -> StreamingResponse:
+    conv_id = await _ensure_conversation()
+
+    async def event_generator():
+        full_text_parts: list[str] = []
+        try:
+            async with aclient.responses.stream(
+                model=OPENAI_CHAT_MODEL,
+                conversation=conv_id,
+                input=[{"role": "user", "content": req.user_message}],
+            ) as stream:
+                async for event in stream:
+                    if getattr(event, "type", None) == "response.output_text.delta":
+                        delta = getattr(event, "delta", "") or ""
+                        if delta:
+                            full_text_parts.append(delta)
+                            yield f"data: {json.dumps({'type': 'delta', 'text': delta})}\n\n"
+            full_text = "".join(full_text_parts)
+            yield (
+                "data: "
+                + json.dumps(
+                    {
+                        "type": "done",
+                        "conversation_id": conv_id,
+                        "assistant_message": full_text,
+                    }
+                )
+                + "\n\n"
+            )
+        except OpenAIError as e:
+            logger.exception("responses.stream failed")
+            yield f"data: {json.dumps({'type': 'error', 'detail': f'openai error: {e}'})}\n\n"
+        except asyncio.CancelledError:
+            raise
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/api/reset", response_model=ResetResponse)
