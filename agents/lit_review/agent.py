@@ -10,6 +10,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
 from agents.lit_review.nodes import (
+    NUM_DIVERSIFIED_QUERIES,
     collect_query,
     diversify_queries,
     draft_summary,
@@ -26,8 +27,9 @@ visualization_path = current_dir / "visualization.png"
 def fan_out_tavily(state: AgentState) -> list[Send]:
     """Map each diversified query to a parallel ``tavily_search`` task."""
     qs = state.get("search_queries") or []
-    if len(qs) != 5:
-        raise ValueError(f"Expected exactly 5 search_queries after diversify, got {len(qs)}.")
+    n = NUM_DIVERSIFIED_QUERIES
+    if len(qs) != n:
+        raise ValueError(f"Expected exactly {n} search_queries after diversify, got {len(qs)}.")
     return [
         Send("tavily_search", {"worker_query": q, "worker_id": i})
         for i, q in enumerate(qs)
