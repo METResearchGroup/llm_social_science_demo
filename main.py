@@ -20,6 +20,8 @@ def _initial_state(query: str) -> dict:
     return {
         "messages": [],
         "query": query,
+        "search_queries": [],
+        "tavily_raw_hits": [],
         "papers": [],
         "human_feedback": [],
         "summary": "",
