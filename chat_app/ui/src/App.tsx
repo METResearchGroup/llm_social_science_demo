@@ -106,7 +106,11 @@ export default function App() {
             key={msg.id}
             className={`bubble bubble-${msg.role}${msg.pending ? " bubble-pending" : ""}`}
           >
-            {msg.pending ? <span className="pending-dots">Thinking…</span> : msg.text}
+            {msg.pending && msg.text === "" ? (
+              <span className="pending-dots">Thinking…</span>
+            ) : (
+              msg.text
+            )}
           </div>
         ))}
         <div ref={bottomRef} className="scroll-anchor" />

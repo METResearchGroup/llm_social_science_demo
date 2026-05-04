@@ -86,6 +86,8 @@ The UI sends turns to **`POST /api/chat/stream`** (Server-Sent Events). The lega
 
 In **local dev** (`npm run dev`), the stream request goes to **`http://localhost:8000`** directly so bytes are not buffered by Vite’s `/api` proxy (which would otherwise show the full reply at once). Production builds still use same-origin **`/api/chat/stream`**.
 
+While a reply is streaming, the assistant bubble shows **partial `text` as it grows** (the “Thinking…” placeholder only appears before the first token arrives).
+
 Response headers: `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `X-Accel-Buffering: no`.
 
 Wire format: frames separated by `\n\n`. Each frame is a single line `data: <json>` where `<json>` is one of:
