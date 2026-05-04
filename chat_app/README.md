@@ -21,8 +21,9 @@ Variables:
 | Variable | Required | Default |
 |----------|----------|---------|
 | `OPENAI_API_KEY` | yes | — |
-| `OPENAI_MODEL` | no | `gpt-4o-mini` |
 | `CORS_ORIGINS` | no | `http://localhost:5173` (comma-separated list allowed) |
+
+The chat model is fixed in code (`gpt-5-nano`; see `OPENAI_CHAT_MODEL` in `chat_app/backend/app.py`).
 
 ## Run the backend
 

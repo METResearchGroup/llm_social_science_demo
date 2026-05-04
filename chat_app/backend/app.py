@@ -12,6 +12,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger("chat_app.backend")
 
+# OpenAI model id (alias), see https://platform.openai.com/docs/models/gpt-5-nano
+OPENAI_CHAT_MODEL = "gpt-5-nano"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -20,7 +23,6 @@ class Settings(BaseSettings):
         extra="ignore",
     )
     openai_api_key: str = Field(alias="OPENAI_API_KEY")
-    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
     cors_origins: str = Field(default="http://localhost:5173", alias="CORS_ORIGINS")
 
 
@@ -78,7 +80,7 @@ async def _ensure_conversation() -> str:
 
 @app.get("/api/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
-    return HealthResponse(ok=True, conversation_id=_conversation_id, model=settings.openai_model)
+    return HealthResponse(ok=True, conversation_id=_conversation_id, model=OPENAI_CHAT_MODEL)
 
 
 @app.post("/api/chat", response_model=ChatResponse)
@@ -87,7 +89,7 @@ async def chat(req: ChatRequest) -> ChatResponse:
     try:
         response = await asyncio.to_thread(
             client.responses.create,
-            model=settings.openai_model,
+            model=OPENAI_CHAT_MODEL,
             conversation=conv_id,
             input=[{"role": "user", "content": req.user_message}],
         )

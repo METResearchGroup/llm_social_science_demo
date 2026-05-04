@@ -27,7 +27,7 @@ def test_health(client: TestClient) -> None:
     j = r.json()
     assert j["ok"] is True
     assert j["conversation_id"] is None
-    assert j["model"] == "gpt-4o-mini"
+    assert j["model"] == "gpt-5-nano"
 
 
 def test_chat(client: TestClient) -> None:

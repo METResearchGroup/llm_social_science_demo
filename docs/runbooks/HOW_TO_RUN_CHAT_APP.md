@@ -35,8 +35,9 @@ Optional variables (defaults shown in `.env.example`):
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENAI_MODEL` | Model passed to `responses.create` (default `gpt-4o-mini`) |
 | `CORS_ORIGINS` | Comma-separated browser origins allowed by the backend (default `http://localhost:5173`) |
+
+The Responses API model id is hardcoded in `chat_app/backend/app.py` as **`gpt-5-nano`** (`OPENAI_CHAT_MODEL`); it is not configurable via environment variables.
 
 Settings load `chat_app/backend/.env` relative to the **repository root** when you run uvicorn from the root as below.
 
