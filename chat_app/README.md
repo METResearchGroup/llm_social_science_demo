@@ -84,6 +84,8 @@ cd chat_app/ui && npm run build
 
 The UI sends turns to **`POST /api/chat/stream`** (Server-Sent Events). The legacy **`POST /api/chat`** JSON endpoint is unchanged.
 
+In **local dev** (`npm run dev`), the stream request goes to **`http://localhost:8000`** directly so bytes are not buffered by Vite’s `/api` proxy (which would otherwise show the full reply at once). Production builds still use same-origin **`/api/chat/stream`**.
+
 Response headers: `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `X-Accel-Buffering: no`.
 
 Wire format: frames separated by `\n\n`. Each frame is a single line `data: <json>` where `<json>` is one of:

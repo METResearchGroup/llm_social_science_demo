@@ -1,5 +1,16 @@
 import type { ChatResponse, HealthResponse, ResetResponse, StreamChatHandlers, StreamEvent } from "./types";
 
+/**
+ * Vite's dev-server `/api` proxy buffers streaming bodies, so the UI would only
+ * see chunks after the full response. In dev, call the API origin directly.
+ */
+function streamUrl(): string {
+  if (import.meta.env.DEV) {
+    return "http://localhost:8000/api/chat/stream";
+  }
+  return "/api/chat/stream";
+}
+
 export async function postChat(user_message: string): Promise<ChatResponse> {
   const res = await fetch("/api/chat", {
     method: "POST",
@@ -29,7 +40,7 @@ export async function getHealth(): Promise<HealthResponse> {
 }
 
 export async function streamChat(user_message: string, handlers: StreamChatHandlers): Promise<void> {
-  const res = await fetch("/api/chat/stream", {
+  const res = await fetch(streamUrl(), {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
     body: JSON.stringify({ user_message }),
