@@ -16,6 +16,8 @@ dependencies = [
     "openai>=2.33.0",
     "pydantic-settings>=2.14.0",
     "uvicorn[standard]>=0.46.0",
+    "datasets>=4.8.5",
+    "pyarrow>=24.0.0",
 ]
 
 [dependency-groups]
