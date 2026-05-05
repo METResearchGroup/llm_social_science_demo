@@ -1,67 +1,82 @@
-"""Shared I/O helpers for ShareChat initial EDA scripts.
-
-Output contract (results.json top-level keys) is frozen here.
-"""
+"""Shared I/O helpers for initial EDA scripts."""
 
 from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
+
+import matplotlib
+import pandas as pd
 
 SCHEMA_VERSION = "1.0"
+RESULTS_ENV_VAR = "INITIAL_EDA_RUN_ID"
+DEFAULT_DATASET_ENV_VAR = "INITIAL_EDA_DATASET"
 
-# Required JSON keys (documentation / tests)
-REQUIRED_RESULT_KEYS = frozenset(
-    {
-        "schema_version",
-        "analysis",
-        "batch_id",
-        "dataset_path",
-        "row_count_input",
-        "row_count_after_filters",
-        "filters",
-        "figures",
-        "metrics",
-        "warnings",
-    }
-)
+REQUIRED_RESULT_KEYS = {
+    "schema_version",
+    "analysis",
+    "run_id",
+    "dataset_path",
+    "git_commit",
+    "filters",
+    "row_count_input",
+    "row_count_after_filters",
+    "metrics",
+    "figures",
+    "warnings",
+}
 
 
 def repo_root() -> Path:
-    """Repository root: parent of ``experiments/``."""
-    return Path(__file__).resolve().parent.parent.parent.parent
+    return Path(__file__).resolve().parents[3]
 
 
-def default_parquet_path() -> Path:
+def default_dataset_path() -> Path:
+    from_env = os.getenv(DEFAULT_DATASET_ENV_VAR)
+    if from_env:
+        return Path(from_env).expanduser().resolve()
     return repo_root() / "data" / "dataset.parquet"
 
 
-def default_output_root() -> Path:
-    return repo_root() / "experiments" / "initial_eda_2026_05_04" / "results"
-
-
-def setup_matplotlib_agg() -> None:
-    import matplotlib
-
+def ensure_agg_backend() -> None:
     matplotlib.use("Agg")
 
 
-def column_warnings(df_columns: list[str]) -> list[str]:
-    warnings: list[str] = []
-    if "topic" not in df_columns:
-        warnings.append("Column 'topic' missing; topic-stratified metrics skipped or empty.")
-    if "detected_language_final" not in df_columns:
-        warnings.append("Column 'detected_language_final' missing.")
-    return warnings
+def load_dataframe(dataset_path: str | Path | None = None) -> pd.DataFrame:
+    path = Path(dataset_path) if dataset_path else default_dataset_path()
+    if not path.is_file():
+        msg = f"Dataset parquet not found: {path}"
+        raise FileNotFoundError(msg)
+    return pd.read_parquet(path)
 
 
-def make_run_dir(*, analysis_slug: str, batch_id: str, output_root: Path | None = None) -> Path:
-    root = output_root if output_root is not None else default_output_root()
-    run_dir = root / analysis_slug / batch_id
-    run_dir.mkdir(parents=True, exist_ok=True)
-    return run_dir
+def make_run_dir(analysis_slug: str, batch_id: str, output_root: Path | None = None) -> Path:
+    root = output_root or (repo_root() / "experiments" / "initial_eda_2026_05_04" / "results")
+    out_dir = root / analysis_slug / batch_id
+    out_dir.mkdir(parents=True, exist_ok=True)
+    return out_dir
+
+
+def git_commit_hash() -> str | None:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=repo_root(),
+        )
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return None
+    return result.stdout.strip() or None
+
+
+def save_figure(fig: Any, path: Path) -> None:
+    fig.tight_layout()
+    fig.savefig(path, dpi=160)
 
 
 def write_results_json(
@@ -72,42 +87,25 @@ def write_results_json(
     dataset_path: str,
     row_count_input: int,
     row_count_after_filters: int,
-    filters: Mapping[str, Any],
+    filters: dict[str, Any],
     figures: list[str],
-    metrics: Any,
+    metrics: dict[str, Any],
     warnings: list[str],
 ) -> Path:
-    payload: dict[str, Any] = {
+    payload = {
         "schema_version": SCHEMA_VERSION,
         "analysis": analysis,
-        "batch_id": batch_id,
+        "run_id": batch_id,
         "dataset_path": dataset_path,
-        "row_count_input": row_count_input,
-        "row_count_after_filters": row_count_after_filters,
-        "filters": dict(filters),
-        "figures": list(figures),
+        "git_commit": git_commit_hash(),
+        "filters": filters,
+        "row_count_input": int(row_count_input),
+        "row_count_after_filters": int(row_count_after_filters),
         "metrics": metrics,
-        "warnings": list(warnings),
+        "figures": [{"file": file_name, "title": file_name} for file_name in figures],
+        "warnings": warnings,
     }
-    missing = REQUIRED_RESULT_KEYS - payload.keys()
-    if missing:
-        msg = f"Internal error: missing keys {sorted(missing)}"
-        raise RuntimeError(msg)
-    out = run_dir / "results.json"
-    out.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    return out
+    output = run_dir / "results.json"
+    output.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    return output
 
-
-def dataset_path_for_json(path: Path) -> str:
-    """Prefer repo-relative path string when under repo root."""
-    try:
-        rel = path.resolve().relative_to(repo_root())
-        return str(rel)
-    except ValueError:
-        return str(path.resolve())
-
-
-def batch_id_from_env_or_cli(cli_batch_id: str | None) -> str | None:
-    if cli_batch_id:
-        return cli_batch_id
-    return os.environ.get("SHARECHAT_EDA_BATCH_ID")

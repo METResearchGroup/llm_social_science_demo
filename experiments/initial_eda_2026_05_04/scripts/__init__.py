@@ -1,1 +1,2 @@
-"""EDA scripts package."""
+"""Scripts package for initial ShareChat EDA analyses."""
+

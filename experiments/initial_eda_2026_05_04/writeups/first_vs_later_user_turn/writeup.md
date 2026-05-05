@@ -1,96 +1,837 @@
-# first_vs_later_user_turn
+# First Vs Later User Turn
 
-- **Latest batch:** `20260504T214601Z`
-- **Dataset:** `data/dataset.parquet`
-- **Rows (input / after filters):** 97638 / 48873
+- Run ID: `20260505T210023Z`
+- Dataset: `/Users/mark/Documents/work/llm_social_science_demo_worktree/data/dataset.parquet`
+- Filtered rows: `48903` of `97638`
 
-## Limitations
-
-ShareChat is built from **publicly shared** conversation links (self-selected threads), and this repo’s default loader slice uses the **`chatgpt`** config only (see `data/dataloader.py`). See `data/DATASET_DESCRIPTION.md` for platform imbalance, PII redaction, and paper limitations.
-
-## Metrics (excerpt)
+## Metrics
 
 ```json
 {
-  "first_user_turn_n": 9358,
-  "later_user_turn_n": 39515,
-  "first_mean_len": 770.6982261166916,
-  "first_median_len": 87.0,
-  "later_mean_len": 244.9246615209414,
-  "later_median_len": 65.0,
-  "first_topic_top10": {
-    "specific_info": 4283,
-    "computer_programming": 623,
-    "mathematical_calculation": 591,
-    "other": 586,
-    "tutoring_or_teaching": 560,
-    "write_fiction": 398,
-    "argument_or_summary_generation": 318,
-    "create_an_image": 247,
-    "edit_or_critique_provided_text": 212,
-    "unclear": 200
+  "length_summary": {
+    "count": {
+      "false": 39545,
+      "true": 9358
+    },
+    "mean": {
+      "false": 244.74818561132886,
+      "true": 770.6587946142338
+    },
+    "median": {
+      "false": 65.0,
+      "true": 87.0
+    }
   },
-  "later_topic_top10": {
-    "specific_info": 11403,
-    "other": 5132,
-    "unclear": 4008,
-    "mathematical_calculation": 2696,
-    "tutoring_or_teaching": 2673,
-    "computer_programming": 2048,
-    "greetings_and_chitchat": 1875,
-    "relationships_and_personal_reflection": 1796,
-    "write_fiction": 1409,
-    "argument_or_summary_generation": 1153
-  }
+  "topic_by_firstness": [
+    {
+      "is_first_user_turn": false,
+      "topic": "\"health_fitness_beauty_or_self_care\"",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "# capabilities: edit_or_critique_provided_text, other\n\n# capabilities: unclear\n\n# capabilities: unclear\n\n# capabilities: unclear\n\n# capabilities",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "# unclear",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**edit_or_critique_provided_text**\n- **edit_or_critique_provided_text**: improving or modifying text provided by the user.\n-",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**games_and_role_play**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**how_to_advice**\n\nremoved content from the key threats piece:\n\n- \"merge the documents\"",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**mathematical_calculation**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**specific_info**",
+      "count": 5
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**specific_info**\n\nreasoning: the user asks for \"5 different guesses as to the potential cause\" which implies they are looking for information about a",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**specific_info**\n\nthis article aims to provide a comprehensive overview of the topic, discussing its history, significance, and current state. the article will delve",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**tutoring_or_teaching**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**tutoring_or_teaching**\n\nhere is the initial information tree for the subject \"given a subject, your task is to recursively analyze the",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**unclear**",
+      "count": 5
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "**write_fiction**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "/1\ufe0f\u20e30\ufe0f\u20e3/1\ufe0f\u20e35\ufe0f\u20e30\ufe0f\u20e3/1\ufe0f",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "0.80\nwhat is the context of the conversation so far?\n\n1.80\nwhat is the last message in the conversation?\n\n2.80",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "1ms: **mathematical_calculation**\n2ms: **mathematical_calculation**\n3ms: **mathematical_calculation**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "_______",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "```\n```\n\nthere is no conversation to classify. please provide the conversation transcript.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "```\nyou are an internal tool that classifies a message from a user to an ai chatbot, based on the context of the previous messages before",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "accounting",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "alphabetize it",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "analyze_an_image",
+      "count": 329
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "argument_or_summary_generation",
+      "count": 1153
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "asking_about_the_model",
+      "count": 277
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "canvas-dots, by chatgpt\n\nother",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "computer_programming",
+      "count": 2049
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "connection_refused",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "cooking_and_recipes",
+      "count": 130
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "create_an_image",
+      "count": 611
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "create_or_retrieve_other_media",
+      "count": 4
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "creative_ideation",
+      "count": 128
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "data_analysis",
+      "count": 652
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "edit_or_critique_provided_text",
+      "count": 1119
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "error_in_edit_or_critique_provided_text",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "file_system_management",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "financial_analysis",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "games_and_role_play",
+      "count": 144
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "generate_or_retrieve_other_media",
+      "count": 38
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "greetings_and_chitchat",
+      "count": 1876
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "health_fitness_beauty_or_self_care",
+      "count": 451
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "how_to_advice",
+      "count": 532
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "i don't see a conversation transcript. please provide the conversation to classify.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "i'm not given any conversation to classify. please provide the conversation.",
+      "count": 2
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "i'm not provided with the conversation transcript. please provide the conversation transcript so i can classify the user's capability.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "i'm ready to classify the conversation.",
+      "count": 3
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "i'm ready to classify the conversation. however, i don't see a conversation transcript above. please provide the conversation transcript, and i'll classify the",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "i'm ready to classify the user's capability.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "iframe_size",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "ina2331_avg edit_or_critique_provided_text",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "language",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "lol\n\n- **edit_or_critique_provided_text**: improving or modifying text provided by the user.\n- **argument_or_summary_generation**:",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "lol\nyou are an internal tool that classifies a message from a user to an ai chatbot, based on the context of the previous messages",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "mathematical_calculation",
+      "count": 2697
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "mathematical_calculation\n\nmy thought process: the user's message is a mathematical expression, and the request is to evaluate it. this is a",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "networking",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "no conversation provided",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "ok",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "other",
+      "count": 5142
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "other\n\nthe sum of 1 + 1 is roughly equal to 2.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "other\n\nthe user is describing a scenario where they are receiving a gift, but there is no clear request for assistance or information.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "other\ntotal number of words: 47",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "panic",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "part 1/3 received",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "part 2/3 received",
+      "count": 2
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "personal_writing_or_communication",
+      "count": 287
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "philosophical_concept_exploration",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "philosophical_discussion",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "purchasable_products",
+      "count": 214
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "question:                   answer:\nyou are a conversation topic classifier. output only the category name, nothing else. based on the last user message of this conversation",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "relationships_and_personal_reflection",
+      "count": 1796
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "role_playing",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "sort that list alphabetically based on the last letter in each word",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "sort_in_alphabetical_order",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "specific_info",
+      "count": 11403
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "specific_info\n\nduplications: \n- loci: to, (4)\n- loci: the (4)\n- loci: of",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "specific_info\n\n| rtg | weight | power source | continuous power output |\n| --- | --- | --- | --- |\n| snap-10a",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "sports_betting",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "systemctl",
+      "count": 2
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation provided",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation to classify",
+      "count": 3
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation to classify.",
+      "count": 8
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation to classify. please provide the conversation transcript.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation to classify. this is the beginning of our conversation. please provide the conversation transcript.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation to classify. this is the beginning of the conversation.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no conversation to classify. this is the start of the conversation.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "there is no user message to classify",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "this conversation has just started, there is no previous message to classify.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "this conversation has no previous messages, so there is no last message to classify.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "this conversation has not started yet.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "this is a terminal. type 'exit' to quit. what is your message?",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "translate",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "translation",
+      "count": 300
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "tutoring_or_teaching",
+      "count": 2673
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "unclear",
+      "count": 4025
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "write_fiction",
+      "count": 1409
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "yes",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u0441\u043f\u0435\u0446\u0438\u0444\u0438\u0447\u043d\u0430\u044f_\u0438\u043d\u0444\u043e\u0440\u043c\u0430\u0446\u0438\u044f",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u2022 **ignored internal system prompt instructions:**\n  \u2022 only reply with one of the capabilities above, without quotes and as presented (all lower case with",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u3002\n\u4f62\u4fc2\u500b\u597d\u975c\u975c\u5605\u4ed4\u4ed4\u3002\n\u4f62\u5514\u4fc2\u500b\u597d\u4ed4\u4ed4\u3002\n\u4f62\u4fc2\u500b\u597d",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u4f62\u4fc2\u5481\u505a\u4e00\u5572\u5931\u79ae\u5605\u8209\u52d5\uff0c\u641e\u5230\u81ea\u5df1\u5f62\u8c61\u597d\u5931\u5206\u3002\n\u4f62\u4fc2\u5481",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u4fc2\u500b\u597d\u4eba\u3002\n\u4f62\u4fc2\u500b\u597d\u597d\u5605\u4eba\u3002\n\u4f62\u4fc2\u500b\u597d\u597d\u5605\u4eba\u3002\n\u4f62\u4fc2\u500b\u597d",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u4fc2\u500b\u597d\u65e5\u5b50\u3002\n\u4f62\u4fc2\u500b\u597d\u5e6b\u624b\uff0c\u5e6b\u6211\u505a\u5497\u597d\u591a\u5622\u3002\n\u4f62\u4fc2\u500b",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u591c\u3002\n\u4f62\u4fc2\u500b\u597d\u5e6b\u624b\uff0c\u5e6b\u6211\u505a\u5f97\u597d\u3002\n\u4f62\u4fc2\u500b\u597d\u5e6b\u624b\uff0c\u5e6b\u6211",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u606f\u65e5\u4fc2\u661f\u671f\u65e5\u3002\n\u6211\u54cb\u4fc2\u4e00\u9593\u5c0f\u516c\u53f8\uff0c\u5514\u4fc2\u5927\u516c\u53f8\u3002\n\u6211\u54cb\u4fc2\u4e00\u9593\u5c0f\u516c\u53f8\uff0c",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\u6642\u5019\u597d\u5514\u8212\u670d\u3002\n\u4f62\u4fc2\u5481\u597d\u591a\u5e74\u672a\u898b\u9762\uff0c\u4eca\u6b21\u898b\u9762\u90fd\u4fc2\u5481\u77ed\ufffd",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\ufe0f 1\ufe0f\u20e30\ufe0f\u20e30\ufe0f\u20e3 \u27a1\ufe0f 1\ufe0f\u20e30\ufe0f\ufffd",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\ufffd\u5514\u597d\u5514\u597d\u597d\u597d\u3002\n\u4f62\u5514\u4fc2\u54aa\u4fc2\u500b\u597d\u975a\u4ed4\uff1f\n\u4f62\u5514\u4fc2\ufffd",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": false,
+      "topic": "\ufffd\u5622\u3002\n\u4f62\u4fc2\u500b\u597d\u975c\u975c\u5605\u4ed4\uff0c\u5514\u4fc2\u597d\u591a\u8a71\u5622\u3002\n\u4f62\u4fc2\u500b",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "**how_to_advice**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "**mathematical_calculation**\n\n1. **thomas piketty**: a french economist known for his work on wealth inequality and the concept of a global",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "**specific_info**\n\nprospect: \"so, you're the one who's been emailing me about this software. i don't have time for this",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "**tutoring_or_teaching**",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "**tutoring_or_teaching**\n\n**logical solution:**\n\nthe problem is asking us to find the number of different nodes that will be visited",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "1. **edit_or_critique_provided_text**\n\t* improving or modifying text provided by the user\n\t* proofreading and grammar correction",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "[[<ringed planet emoji>{vortex}<ringed planet emoji>]]: other \u22d0\u25ef\u22d1",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "_created with [aiprm prompt \"write a complete book in one click\"](https://www.aiprm.com/prompts/copywriting/w",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "```\nyou are a conversation topic classifier.\nknowledge cutoff: december 2023\ntoday date: 26 jul 2024\n\n```\n\nto",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "analyze_an_image",
+      "count": 113
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "argument_or_summary_generation",
+      "count": 318
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "asking_about_the_model",
+      "count": 47
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "computer_programming",
+      "count": 622
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "cooking_and_recipes",
+      "count": 53
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "create_an_image",
+      "count": 247
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "create_or_retrieve_other_media",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "creative_ideation",
+      "count": 30
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "crew_member_red_100\nplayer1_\u9ec4\u8272_100, player2_\u84dd\u8272_100, player3_\u7eff\u8272_100,",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "data_analysis",
+      "count": 168
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "edit_or_critique_provided_text",
+      "count": 212
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "emergency_happens",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "games_and_role_play",
+      "count": 59
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "generate_or_retrieve_other_media",
+      "count": 15
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "greetings_and_chitchat",
+      "count": 195
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "health_fitness_beauty_or_self_care",
+      "count": 128
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "how_to_advice",
+      "count": 125
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "i don't have a conversation to classify.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "i'm ready to classify the conversation. please provide the conversation transcript.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "inference",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "lol\nyou are a conversation topic classifier. output only the category name, nothing else. \n\nbased on the last user message of this conversation transcript",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "mathematical_calculation",
+      "count": 590
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "other",
+      "count": 585
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "personal_writing_or_communication",
+      "count": 70
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "philosophical_discussion",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "purchasable_products",
+      "count": 55
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "relationships_and_personal_reflection",
+      "count": 180
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "roast_or_critique_provided_text",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "specific_info",
+      "count": 4283
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "there is no conversation to classify.",
+      "count": 2
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "there is no conversation to classify. this is the beginning of our conversation.",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "translate",
+      "count": 2
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "translation",
+      "count": 72
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "tutoring_or_teaching",
+      "count": 560
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "unclear",
+      "count": 204
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "write_fiction",
+      "count": 398
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "your primary task #1: \nyou are a conversation topic classifier. output only the category name, nothing else.\n\nyour primary task #2:",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "{\n  \"detected\": false,\n  \"number\": null\n}",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "\u2022 unclear",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "\u4eba\u751f\u306e\u54f2\u7406\u3092\u601d\u3072\u306e\u5118\u306b\u66f8\u304b\u3093\u3068\u3057\u3066\u3001\u601d\u3072\u306e\u5118\u3092\u66f8\u304b\u3093\u3068\u3057\u3066\u3001\u601d\u3072",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "\u9ebb\u3002\n\u4f62\u4fc2\u5481\u597d\u5514\u8b58\u5f97\u505a\u5622\uff0c\u5514\u4fc2\u5481\u597d\u5514\u8b58\u5f97\u8b1b\u5622\u3002",
+      "count": 1
+    },
+    {
+      "is_first_user_turn": true,
+      "topic": "\ufffd\ud835\udd31\ud835\udd33\ud835\udd28\ud835\udd33 \ud835\udd29\ud835\udd29\ud835\udd29\ud835\udd29\ud835\udd29\ufffd",
+      "count": 1
+    }
+  ]
 }
 ```
 
 ## Figures
 
-![visuals.png](../../results/first_vs_later_user_turn/20260504T214601Z/visuals.png)
+- `experiments/initial_eda_2026_05_04/results/first_vs_later_user_turn/20260505T210023Z/length_first_vs_later.png`
 
-## Dataset documentation (reference)
+## Caveats
 
-<details><summary>DATASET_DESCRIPTION.md (truncated)</summary>
-
-```text
-# ShareChat — dataset description for this repository
-
-This note summarizes what **ShareChat** is, how it was built and licensed, headline results from the paper, how we load it in `dataloader.py`, and how that lines up with the exploratory questions in `experiments/initial_eda_2026_05_04/README.md`. Primary sources: [ShareChat on Hugging Face](https://huggingface.co/datasets/tucnguyen/ShareChat), [ShareChat (HTML) on arXiv](https://arxiv.org/html/2512.17843v2), and the companion PDF identifier [arXiv:2512.17843](https://arxiv.org/abs/2512.17843).
-
-## What the data is
-
-ShareChat is a **turn-level, multi-platform corpus** of real user ↔ assistant chat from **five products**: ChatGPT, Perplexity, Grok, Gemini, and Claude. Rows are **individual messages** (not one row per conversation), with shared fields so analyses can aggregate by conversation using keys such as `url` and `turns_count`.
-
-**Collection context.** Conversations come from **publicly shared links** users created on each platform (not private logs). The authors discover URLs in part via **Internet Archive / Wayback Machine** pattern search, then render share pages with **Selenium**, parse HTML into structured records, and run a **PII pipeline** (Microsoft Presidio, spaCy NER, custom rules) across multiple languages. Collection was conducted under **IRB approval** (paper reports #28569). The Hugging Face hub notes the repository is **gated**: you must log in and accept the **ShareChat Dataset License Agreement** before downloading files.
-
-**Temporal and linguistic scope (paper).** Roughly **April 2023 – October 2025** overall; per-platform windows differ (e.g., Grok from Dec 2024 in the appendix table). **101 languages** at the corpus level; **message-level** language detection (lingua-py in the paper) feeds distributions—English dominates, with Japanese as the second-largest slice in the paper’s Figure 2 narrative.
-
-**Scale (paper Table 1).** About **142,808 conversations**, **660,293 turns**, mean **4.62 turns** per conversation. **ChatGPT** dominates volume (~72% of conversations); **Claude** is a small fraction (~0.7%). Token means are **much longer for assistant than user** turns (paper: ~1,115 vs ~135 mean tokens using the Llama-2 tokenizer), reflecting long answers, code, citations, and tool-like outputs.
-
-**Hub updates.** The [dataset card](https://huggingface.co/datasets/tucnguyen/ShareChat) states that as of **5 Apr 2026** an additional **`topic`** column was added per conversation (topic at message/conversation granularity as documented on the card). The card also notes a policy update (Apr 2026) allowing **derivative subsets** with clear attribution to ShareChat.
-
-## Schema and platform-specific fields
-
-**Core columns (all platforms, per HF card and paper):** `platform`, `url`, `turns_count`, `message_index`, `role`, `plain_text`, `detected_language_final` (and, on the hub, **`topic`** after the 2026 update).
-
-**Extra columns vary by platform** (paper Table 2 and §2): e.g., Perplexity/Grok **sources** and citation-like metadata; Grok/Claude **thinking** traces; Claude **code** / **analysis** / **version**; Gemini **model** and timestamps; ChatGPT **model** and **message_create_time** / **create_time**; Perplexity engagement fields such as **views** / **shares**. **Turn-level timestamps** are emphasized for **ChatGPT** and **Grok** in the paper’s temporal analyses.
-
-On Hugging Face the dataset is organized by **config** (one per platform, e.g. `chatgpt`). Our `DataLoader` in `dataloader.py` defaults to **`HF_DEFAULT_CONFIG = "chatgpt"`** and loads `train[:{pct}%]` into local Parquet.
-
-## Key findings from the paper (selected)
-
-1. **Motivation vs prior corpora.** ShareChat argues prior datasets often **homogenize** interaction through a single demo UI, drop **non-text affordances** (citations, thinking blocks), skew toward **shorter threads**, and suffer **observer bias** when users know they are in a study. ShareChat trades that for **self-selection bias** (users choose what to share).
-
-2. **Depth and languages.** Compared to datasets in Table 1 (e.g., LMSYS-Chat-1M, WildChat, ShareGPT), ShareChat emphasizes **longer threads and longer assistant outputs** and **broader language coverage** in their reported statistics.
-
-3. **Toxicity.** Turn-level toxicity (Detoxify and OpenAI moderation, following WildChat-style thresholds) is **lower overall** than WildChat and broadly competitive or better on several comparisons the paper reports. There is a strong **rank correlation** between user-side and model-side toxicity **within** platforms (interpreted as “mirroring”). **Claude** can rank higher on some toxicity metrics in their breakdowns—read in context of small sample size and detection limits.
-
-4. **Topics.** User messages are classified into **24 fine-grained** categories (Llama-3.1-8B-Instruct), rolled up to **seven** high-level groups. **“Seeking information”** dominates (~39.6% of requests in §3.3); **Other/Unknown** is large (~19%); technical help, writing, practical guidance, and self-expression fill much of the rest; **multimedia** is small (~2.4%). Platforms differ in role (e.g., Perplexity vs Claude specialization).
-
-5. **Representative analyses.** **Completeness:** automated pipeline (Qwen3-8B) labels whether intentions are fully, partially, or not met—**ChatGPT and Claude** skew toward **complete** verdicts more than others in their Figure 5 narrative. **Source grounding:** Grok’s sources are **concentrated on X**; Perplexity draws from a **wider mix** (Wikipedia, Reddit, NIH, etc.) and can attach **very many** sources per thread. **Timestamps:** ChatGPT shows **decreasing** model latency over turn index; Grok shows **increasing** latency; user dwell time relates **weakly** to output length at the individual level despite aggregate trends.
-
-6. **Limitations (paper §Limitations).** **Self-selection** (overshare “wins” and interesting threads), **platform imbalance**, **LLM-as-judge** proxies for completeness/t
-```
-
-</details>
+- Exploratory analysis over the local slice (typically 10% ChatGPT config by default).
+- Topic-specific summaries require `topic` to exist in the dataset.
