@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "analysis": "pronoun_reference",
+  "run_id": "20260505T210023Z",
+  "dataset_path": "/Users/mark/Documents/work/llm_social_science_demo_worktree/data/dataset.parquet",
+  "git_commit": "10bf5a9",
+  "filters": {
+    "role": "user"
+  },
+  "row_count_input": 97638,
+  "row_count_after_filters": 48903,
+  "metrics": {
+    "counts": {
+      "self": 34041,
+      "bot_you": 26652,
+      "other_they": 12075
+    },
+    "per_message_any": {
+      "self_reference_rate": 0.2089237879066724,
+      "bot_reference_rate": 0.1888841175388013,
+      "other_reference_rate": 0.07545549352800442
+    }
+  },
+  "figures": [
+    {
+      "file": "pronoun_counts.png",
+      "title": "pronoun_counts.png"
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "analysis": "thread_length_vs_user_properties",
+  "run_id": "20260505T210023Z",
+  "dataset_path": "/Users/mark/Documents/work/llm_social_science_demo_worktree/data/dataset.parquet",
+  "git_commit": "10bf5a9",
+  "filters": {
+    "role": "user"
+  },
+  "row_count_input": 97638,
+  "row_count_after_filters": 48903,
+  "metrics": {
+    "bin_summary": {
+      "count": {
+        "1-2": 7093,
+        "3-5": 6948,
+        "6+": 34862
+      },
+      "mean": {
+        "1-2": 704.260397575074,
+        "3-5": 370.2535981577432,
+        "6+": 267.41297114336527
+      },
+      "median": {
+        "1-2": 80.0,
+        "3-5": 65.0,
+        "6+": 67.0
+      }
+    },
+    "spearman_correlation": {
+      "rho": -0.06564467553018512,
+      "p_value": 7.598893232988222e-48
+    }
+  },
+  "figures": [
+    {
+      "file": "mean_length_by_turn_bin.png",
+      "title": "mean_length_by_turn_bin.png"
+    }
+  ],
+  "warnings": []
+}

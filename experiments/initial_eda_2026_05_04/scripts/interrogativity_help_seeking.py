@@ -1,116 +1,67 @@
-"""EDA Q5: interrogativity and help-seeking surface cues (user turns)."""
-
 from __future__ import annotations
 
 import argparse
-import re
-from pathlib import Path
+import os
 
 import matplotlib.pyplot as plt
-import pandas as pd
 
-from eda_io import (
-    batch_id_from_env_or_cli,
-    column_warnings,
-    dataset_path_for_json,
-    default_output_root,
-    default_parquet_path,
-    make_run_dir,
-    setup_matplotlib_agg,
-    write_results_json,
-)
+from experiments.initial_eda_2026_05_04.scripts import eda_io
 
 ANALYSIS = "interrogativity_help_seeking"
-
-CUE_RE = re.compile(
-    r"\b(?:how|why|what|when|where|which|who|should|could|would|can\s+you|please\s+help)\b",
-    re.I,
-)
+HELP_PATTERN = r"\b(how|why|what|should|can you|could you|help)\b"
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Question marks and help-seeking cues.")
-    p.add_argument("--parquet", type=Path, default=None)
-    p.add_argument("--batch-id", type=str, default=None)
-    p.add_argument("--output-root", type=Path, default=None)
-    return p.parse_args()
-
-
-def stratified_rates(series_mask: pd.Series, df: pd.DataFrame, col: str) -> dict[str, dict[str, float]]:
-    out: dict[str, dict[str, float]] = {}
-    if col not in df.columns:
-        return out
-    g = df[col].fillna("(missing)").astype(str)
-    for key in sorted(g.unique(), key=lambda x: (-(g == x).sum(), str(x)))[:15]:
-        m = g == key
-        denom = int(m.sum())
-        if denom == 0:
-            continue
-        out[str(key)] = {"rate": float(series_mask[m].mean()), "n": float(denom)}
-    return out
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run-id", default=os.getenv(eda_io.RESULTS_ENV_VAR))
+    parser.add_argument("--data", default=str(eda_io.default_dataset_path()))
+    return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    batch_id = batch_id_from_env_or_cli(args.batch_id)
-    if not batch_id:
-        print("error: --batch-id or SHARECHAT_EDA_BATCH_ID is required")
-        return 2
+    if not args.run_id:
+        raise ValueError("run_id missing; pass --run-id or set INITIAL_EDA_RUN_ID")
+    eda_io.ensure_agg_backend()
+    df = eda_io.load_dataframe(args.data)
+    user_df = df[df["role"].astype(str).str.lower() == "user"].copy()
+    user_df["text"] = user_df.get("plain_text", "").fillna("").astype(str)
+    user_df["is_question"] = user_df["text"].str.rstrip().str.endswith("?")
+    user_df["has_help_cue"] = user_df["text"].str.contains(HELP_PATTERN, case=False, regex=True, na=False)
 
-    parquet = (args.parquet or default_parquet_path()).resolve()
-    output_root = (args.output_root or default_output_root()).resolve()
+    question_rate = float(user_df["is_question"].mean()) if len(user_df) else 0.0
+    help_rate = float(user_df["has_help_cue"].mean()) if len(user_df) else 0.0
+    by_language = (
+        user_df.groupby("detected_language_final")[["is_question", "has_help_cue"]].mean().fillna(0).to_dict(orient="index")
+        if "detected_language_final" in user_df.columns
+        else {}
+    )
+    warnings: list[str] = []
+    if "topic" not in user_df.columns:
+        warnings.append("topic column missing; skipped topic breakdown")
 
-    df = pd.read_parquet(parquet)
-    row_in = len(df)
-    warnings = column_warnings(list(df.columns))
-
-    u = df[df["role"].astype(str).str.lower() == "user"].copy()
-    u = u[u["plain_text"].notna()]
-    text = u["plain_text"].astype(str)
-    row_after = len(u)
-
-    ends_q = text.str.rstrip().str.endswith("?")
-    has_cue = text.str.contains(CUE_RE, regex=True, na=False)
-
-    metrics: dict = {
-        "rate_ends_with_question_mark": float(ends_q.mean()) if row_after else 0.0,
-        "rate_contains_help_seeking_cue_regex": float(has_cue.mean()) if row_after else 0.0,
-        "rate_either_question_or_cue": float((ends_q | has_cue).mean()) if row_after else 0.0,
-        "by_language": stratified_rates(ends_q | has_cue, u, "detected_language_final"),
-        "by_topic": stratified_rates(ends_q | has_cue, u, "topic"),
-    }
-
-    setup_matplotlib_agg()
-    run_dir = make_run_dir(analysis_slug=ANALYSIS, batch_id=batch_id, output_root=output_root)
-
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    axes[0].bar(["ends ?", "cue phrase", "either"], [ends_q.mean(), has_cue.mean(), (ends_q | has_cue).mean()])
-    axes[0].set_ylim(0, 1)
-    axes[0].set_title("Overall rates (user turns)")
-
-    lang_rates = metrics["by_language"]
-    if lang_rates:
-        keys = list(lang_rates.keys())[:12]
-        vals = [lang_rates[k]["rate"] for k in keys]
-        axes[1].barh(keys[::-1], vals[::-1])
-        axes[1].set_xlim(0, 1)
-        axes[1].set_title("Either ? or cue (by language, top buckets)")
-    else:
-        axes[1].text(0.5, 0.5, "No language", ha="center")
-    fig.tight_layout()
-    fig.savefig(run_dir / "visuals.png", dpi=150)
+    run_dir = eda_io.make_run_dir(ANALYSIS, args.run_id)
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(["question_rate", "help_cue_rate"], [question_rate, help_rate])
+    ax.set_title("Interrogativity and help-seeking rates")
+    ax.set_ylim(0, 1)
+    eda_io.save_figure(fig, run_dir / "question_help_rates.png")
     plt.close(fig)
 
-    write_results_json(
+    eda_io.write_results_json(
         run_dir,
         analysis=ANALYSIS,
-        batch_id=batch_id,
-        dataset_path=dataset_path_for_json(parquet),
-        row_count_input=row_in,
-        row_count_after_filters=row_after,
+        batch_id=args.run_id,
+        dataset_path=args.data,
+        row_count_input=len(df),
+        row_count_after_filters=len(user_df),
         filters={"role": "user"},
-        figures=["visuals.png"],
-        metrics=metrics,
+        figures=["question_help_rates.png"],
+        metrics={
+            "question_rate": question_rate,
+            "help_cue_rate": help_rate,
+            "by_language": by_language,
+        },
         warnings=warnings,
     )
     return 0
@@ -118,3 +69,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

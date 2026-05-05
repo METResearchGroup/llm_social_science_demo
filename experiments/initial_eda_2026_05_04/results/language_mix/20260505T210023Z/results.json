@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "analysis": "language_mix",
+  "run_id": "20260505T210023Z",
+  "dataset_path": "/Users/mark/Documents/work/llm_social_science_demo_worktree/data/dataset.parquet",
+  "git_commit": "10bf5a9",
+  "filters": {
+    "role": "user"
+  },
+  "row_count_input": 97638,
+  "row_count_after_filters": 48903,
+  "metrics": {
+    "english_rate": 0.6360141504611169,
+    "top_languages": {
+      "English": 31103,
+      "Japanese": 9576,
+      "Spanish": 1581,
+      "German": 1441,
+      "Chinese": 1435,
+      "French": 1119,
+      "Portuguese": 917,
+      "Italian": 557,
+      "Russian": 463,
+      "Dutch": 169
+    }
+  },
+  "figures": [
+    {
+      "file": "top_languages.png",
+      "title": "top_languages.png"
+    },
+    {
+      "file": "english_share.png",
+      "title": "english_share.png"
+    }
+  ],
+  "warnings": []
+}
