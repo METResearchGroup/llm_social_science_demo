@@ -3,6 +3,10 @@
 import typer
 
 from agents.data_analysis.agent import run_query
+from lib.env_vars_loader import EnvVarsLoader
+
+# Load repo-root `.env` before LLM-backed router reads `os.environ`.
+EnvVarsLoader.load_env_vars()
 
 
 def main(user_query: str = typer.Option(..., "--user-query")) -> None:
