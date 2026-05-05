@@ -1,175 +1,205 @@
-"""LangGraph scaffold for a basic data analysis agent.
+"""LangGraph v1 data-analysis agent with deterministic routing.
 
 To run:
 
-PYTHONPATH=. uv run python agents/data_analysis/agent.py --user-query "Can you find trends in the conversation between first message and the rest of the messages in a conversation?"
+PYTHONPATH=. uv run python agents/data_analysis/main.py --user-query "Can you find trends in the conversation between first message and the rest of the messages in a conversation?"
 
 """
 
 from __future__ import annotations
 
-import operator
 import pathlib
-from typing import Annotated, Any, NotRequired, TypedDict
+import re
+from typing import Any, TypedDict
 
+import typer
 from langgraph.graph import END, START, StateGraph
-from langgraph.graph.message import add_messages
-from langgraph.types import Send
+
+from data.dataloader import DataLoader
 
 current_dir = pathlib.Path(__file__).parent
 visualization_path = current_dir / "visualization.png"
 
 
-class AgentState(TypedDict):
+class AgentState(TypedDict, total=False):
     """State passed between data-analysis nodes."""
 
-    # Conversation context
-    messages: Annotated[list, add_messages]
     user_query: str
     analysis_goal: str
-
-    # Data context
-    data_ref: str
-    schema_digest: str
-
-    # Planning + fan-out
-    subtasks: list[dict[str, Any]]
-    worker_id: NotRequired[int]
-    worker_spec: NotRequired[dict[str, Any]]
-
-    # Worker and merged outputs
-    worker_outputs: Annotated[list[dict[str, Any]], operator.add]
-    merged_results: dict[str, Any]
-
-    # Final narrative output
-    narrative: str
+    route: str
+    dataframe_path: str
+    analysis_result: dict[str, Any]
     report: str
 
 
 def ingest_question(state: AgentState) -> dict[str, Any]:
-    """Normalize user query into an analysis goal."""
+    """Normalize user query into a canonical analysis goal string."""
     query = (state.get("user_query") or "").strip()
-    return {
-        "analysis_goal": query or "Summarize the dataset and answer the user question.",
+    goal = query or "analyze first message versus later messages"
+    return {"analysis_goal": goal}
+
+
+def route_query_answerability(state: AgentState) -> str:
+    """Route query to answerable vs unanswerable branch."""
+    query = (state.get("analysis_goal") or "").lower()
+    supported_keywords = {
+        "trend",
+        "conversation",
+        "first",
+        "rest",
+        "message",
+        "messages",
+        "turn",
+        "turns",
+        "length",
+        "question",
+        "topic",
+        "language",
+        "sharechat",
+    }
+    unsupported_keywords = {
+        "weather",
+        "temperature",
+        "stock",
+        "bitcoin",
+        "tomorrow",
+        "next week",
+        "news",
     }
 
+    if any(token in query for token in unsupported_keywords):
+        return "unanswerable"
+    if any(token in query for token in supported_keywords):
+        return "answerable"
+    return "unanswerable"
 
-def load_context(state: AgentState) -> dict[str, Any]:
-    """Load or summarize data context.
 
-    Stub behavior:
-    - Preserves provided data_ref when present.
-    - Emits a placeholder schema digest.
-    """
-    data_ref = state.get("data_ref") or "TODO: set dataset path or table reference"
-    schema_digest = (
-        state.get("schema_digest")
-        or "TODO: populate schema digest (columns, dtypes, row count, key fields)"
+def unanswerable_query(_: AgentState) -> dict[str, Any]:
+    """Emit exact contract string for unanswerable questions."""
+    message = "this query can't be answered by the data"
+    print(message)
+    return {"report": message}
+
+
+def load_dataset_context(_: AgentState) -> dict[str, Any]:
+    """Load local parquet through DataLoader.load_data_from_local."""
+    loader = DataLoader()
+    _ = loader.load_data_from_local()
+    return {"dataframe_path": str(loader.output_path)}
+
+
+def analyze_first_vs_rest(_: AgentState) -> dict[str, Any]:
+    """Compute deterministic v1 metrics for first-turn vs later turns."""
+    loader = DataLoader()
+    df = loader.load_data_from_local()
+
+    working_df = df.copy()
+    working_df["message_index"] = (
+        working_df["message_index"].astype("string").str.extract(r"(-?\d+)", expand=False)
     )
-    return {"data_ref": data_ref, "schema_digest": schema_digest}
-
-
-def plan_analysis(state: AgentState) -> dict[str, Any]:
-    """Create bounded subtasks from the analysis goal.
-
-    Stub behavior:
-    - Produces two generic subtasks so fan-out wiring is visible.
-    """
-    goal = state.get("analysis_goal") or "Understand the dataset"
-    subtasks = [
-        {"name": "baseline_summary", "instruction": f"Create baseline summary for: {goal}"},
-        {"name": "focused_slice", "instruction": f"Analyze one focused slice for: {goal}"},
-    ]
-    return {"subtasks": subtasks}
-
-
-def fan_out_subtasks(state: AgentState) -> list[Send]:
-    """Map each planned subtask to a parallel worker node."""
-    subtasks = state.get("subtasks") or []
-    if not subtasks:
-        raise ValueError("Expected at least one subtask from plan_analysis.")
-    return [
-        Send("worker_analyze", {"worker_id": i, "worker_spec": subtask})
-        for i, subtask in enumerate(subtasks)
-    ]
-
-
-def worker_analyze(state: AgentState) -> dict[str, Any]:
-    """Run one subtask analysis.
-
-    Stub behavior:
-    - Returns deterministic placeholder output per worker.
-    """
-    worker_id = state.get("worker_id", -1)
-    worker_spec = state.get("worker_spec") or {}
-    output = {
-        "worker_id": worker_id,
-        "status": "stubbed",
-        "subtask": worker_spec,
-        "preview": "TODO: attach dataframe preview or aggregate metrics.",
-        "artifacts": [],
-    }
-    return {"worker_outputs": [output]}
-
-
-def merge_results(state: AgentState) -> dict[str, Any]:
-    """Merge all worker outputs into one object."""
-    outputs = state.get("worker_outputs") or []
-    merged = {
-        "num_workers": len(outputs),
-        "workers": outputs,
-    }
-    return {"merged_results": merged}
-
-
-def interpret_results(state: AgentState) -> dict[str, Any]:
-    """Generate narrative interpretation from merged worker outputs."""
-    merged = state.get("merged_results") or {}
-    worker_count = merged.get("num_workers", 0)
-    narrative = (
-        "Stub interpretation: completed "
-        f"{worker_count} analysis branch(es). Replace with grounded findings and caveats."
+    working_df["message_index"] = (
+        working_df["message_index"]
+        .fillna("-1")
+        .astype(int)
     )
-    return {"narrative": narrative}
+    working_df["plain_text"] = working_df["plain_text"].fillna("").astype(str)
+
+    # Contract requires first-turn derivation from message_index == 0.
+    # ShareChat slices may be 1-indexed, so normalize to keep the same predicate.
+    index_shift = 1 if int(working_df["message_index"].min()) >= 1 else 0
+    working_df["normalized_message_index"] = working_df["message_index"] - index_shift
+    working_df["is_first_turn"] = working_df["normalized_message_index"] == 0
+    working_df["text_length"] = working_df["plain_text"].str.len()
+    working_df["has_question_mark"] = working_df["plain_text"].str.contains(r"\?")
+    working_df["has_why"] = working_df["plain_text"].str.contains(r"\bwhy\b", flags=re.IGNORECASE)
+
+    first = working_df[working_df["is_first_turn"]]
+    rest = working_df[~working_df["is_first_turn"]]
+
+    def _rate(series: Any) -> float:
+        return float(series.mean()) if len(series) else 0.0
+
+    result = {
+        "counts": {
+            "first_turn_rows": int(len(first)),
+            "non_first_turn_rows": int(len(rest)),
+        },
+        "average_text_length": {
+            "first_turn": round(float(first["text_length"].mean()) if len(first) else 0.0, 2),
+            "non_first_turn": round(float(rest["text_length"].mean()) if len(rest) else 0.0, 2),
+        },
+        "question_rate": {
+            "first_turn": round(_rate(first["has_question_mark"]), 4),
+            "non_first_turn": round(_rate(rest["has_question_mark"]), 4),
+        },
+        "lexical_cue_rate_why": {
+            "first_turn": round(_rate(first["has_why"]), 4),
+            "non_first_turn": round(_rate(rest["has_why"]), 4),
+        },
+    }
+
+    first_len = result["average_text_length"]["first_turn"]
+    rest_len = result["average_text_length"]["non_first_turn"]
+    first_q = result["question_rate"]["first_turn"]
+    rest_q = result["question_rate"]["non_first_turn"]
+    interpretation = (
+        "First-turn messages are generally longer than later turns."
+        if first_len > rest_len
+        else "Later turns are generally longer than first-turn messages."
+    )
+    interpretation += (
+        " First turns are more likely to contain questions."
+        if first_q > rest_q
+        else " Later turns are more likely to contain questions."
+    )
+    result["interpretation"] = interpretation
+    return {"analysis_result": result}
 
 
-def finalize_report(state: AgentState) -> dict[str, Any]:
-    """Compose final report text."""
-    goal = state.get("analysis_goal") or "N/A"
-    narrative = state.get("narrative") or "No narrative generated."
+def summarize_results(state: AgentState) -> dict[str, Any]:
+    """Format final report text for the answerable path."""
+    goal = state.get("analysis_goal", "")
+    result = state.get("analysis_result", {})
     report = "\n".join(
         [
-            "# Data Analysis Agent Report (Stub)",
+            "# Data Analysis Agent Report",
             "",
             f"Goal: {goal}",
             "",
+            "## First-vs-rest trend metrics",
+            str(result),
+            "",
             "## Interpretation",
-            narrative,
+            str(result.get("interpretation", "")),
         ]
     )
+    print(report)
     return {"report": report}
 
 
 def build_graph():
-    """Build and compile the data analysis LangGraph."""
+    """Build and compile the data-analysis LangGraph."""
     graph = StateGraph(AgentState)
 
     graph.add_node("ingest_question", ingest_question)
-    graph.add_node("load_context", load_context)
-    graph.add_node("plan_analysis", plan_analysis)
-    graph.add_node("worker_analyze", worker_analyze)
-    graph.add_node("merge_results", merge_results)
-    graph.add_node("interpret_results", interpret_results)
-    graph.add_node("finalize_report", finalize_report)
+    graph.add_node("unanswerable_query", unanswerable_query)
+    graph.add_node("load_dataset_context", load_dataset_context)
+    graph.add_node("analyze_first_vs_rest", analyze_first_vs_rest)
+    graph.add_node("summarize_results", summarize_results)
 
     graph.add_edge(START, "ingest_question")
-    graph.add_edge("ingest_question", "load_context")
-    graph.add_edge("load_context", "plan_analysis")
-    graph.add_conditional_edges("plan_analysis", fan_out_subtasks, ["worker_analyze"])
-    graph.add_edge("worker_analyze", "merge_results")
-    graph.add_edge("merge_results", "interpret_results")
-    graph.add_edge("interpret_results", "finalize_report")
-    graph.add_edge("finalize_report", END)
+    graph.add_conditional_edges(
+        "ingest_question",
+        route_query_answerability,
+        {
+            "answerable": "load_dataset_context",
+            "unanswerable": "unanswerable_query",
+        },
+    )
+    graph.add_edge("load_dataset_context", "analyze_first_vs_rest")
+    graph.add_edge("analyze_first_vs_rest", "summarize_results")
+    graph.add_edge("summarize_results", END)
+    graph.add_edge("unanswerable_query", END)
 
     return graph.compile()
 
@@ -197,6 +227,17 @@ def visualize_graph(app):
         print(app.get_graph().draw_ascii())
 
 
+def run_query(user_query: str) -> str:
+    """Run the graph for a single query and return final report text."""
+    app = build_graph()
+    result = app.invoke({"user_query": user_query})
+    return result.get("report", "")
+
+
+def main(user_query: str = typer.Option(..., "--user-query")) -> None:
+    """CLI entrypoint used by this module for backward compatibility."""
+    run_query(user_query)
+
+
 if __name__ == "__main__":
-    graph_app = build_graph()
-    visualize_graph(graph_app)
+    typer.run(main)
