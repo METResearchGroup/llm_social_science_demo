@@ -1,23 +1,26 @@
+from __future__ import annotations
+
 from typing import Any
 
 from agents.data_analysis.state import AgentState
 
 
-def summarize_results(state: AgentState) -> dict[str, str]:
-    """Format final report text for the answerable path."""
+def finalize_report(state: AgentState) -> dict[str, str]:
+    """Compose and print final report text."""
     goal = state.get("analysis_goal", "")
-    result: dict[str, Any] = state.get("analysis_result", {})
+    merged: dict[str, Any] = state.get("merged_results", {})
+    narrative = state.get("narrative", "")
     report = "\n".join(
         [
             "# Data Analysis Agent Report",
             "",
             f"Goal: {goal}",
             "",
-            "## First-vs-rest trend metrics",
-            str(result),
+            "## Structured Results",
+            str(merged),
             "",
             "## Interpretation",
-            str(result.get("interpretation", "")),
+            narrative,
         ]
     )
     print(report)
